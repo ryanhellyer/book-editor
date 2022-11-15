@@ -57,12 +57,21 @@ page[size="A5"][layout="landscape"] {
 
 <page id="page-0" size="A4" contenteditable>
 	<?php
-	// 13727 words
-	$word_count = 13727;
 	$string     = file_get_contents( 'words.html' );
+	$word_count = count(
+		str_word_count(
+			strip_tags(
+				strtolower(
+					$string
+				)
+			),
+			1
+		)
+	);
+
 	$x          = 0;
 	$text       = '';
-	while ( $x < 2 ) {
+	while ( $x < 1 ) {
 		$x++;
 		$text = $text . $string;
 	}
@@ -73,9 +82,6 @@ page[size="A5"][layout="landscape"] {
 	echo $text;
 ?>
 </page>
-<!--
-<page size="A4"></page>
--->
 
 <script>
 window.addEventListener( 'load', function( event ) {
