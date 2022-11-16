@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en-NZ">
 <head>
@@ -74,9 +75,8 @@ page[size="A5"][layout="landscape"] {
 <body>
 
 <div id="page-number">1</div>
-<div id="wrapper" contenteditable>
-	<page class="hidden-text" page_number="1" size="A4"></page>
-</div>
+
+<page class="hidden-text" page_number="1" size="A4" contenteditable></page>
 
 <script>
 
@@ -109,7 +109,6 @@ window.addEventListener( 'load', function( event ) {
 	const page_number_box = document.getElementById( 'page-number' );
 
 	let pages             = document.querySelectorAll( 'page' );
-	let wrapper           = document.getElementById( 'wrapper' );
 	let start_page_number = 1;
 	let page_number       = start_page_number;
 	let page              = pages[ page_number - 1 ];
@@ -160,8 +159,8 @@ while ( bla < (1000*1000*10) ) {
 					next_page.setAttribute( 'class', 'hidden-text' );
 					next_page.setAttribute( 'page_number', ( page_number + 1 ) );
 					next_page.setAttribute( 'size', 'A4' );
-//					next_page.setAttribute( 'contenteditable', '' );
-					wrapper.appendChild( next_page );
+					next_page.setAttribute( 'contenteditable', '' );
+					document.body.appendChild( next_page );
 
 					pages = document.querySelectorAll( 'page' );
 				} else {
