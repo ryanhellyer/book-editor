@@ -72,6 +72,10 @@ page[size="A5"][layout="landscape"] {
 <page page_number="1" size="A4" contenteditable></page>
 
 <script>
+
+/**
+ * Load page content via AJAX.
+ */
 const request = new XMLHttpRequest();
 request.open(
 	'GET',
@@ -94,10 +98,8 @@ request.onreadystatechange = function() {
 
 	}
 };
-
 request.send();
-/*
-*/
+
 
 window.addEventListener( 'load', function( event ) {
 	let pages       = document.querySelectorAll( 'page' );
