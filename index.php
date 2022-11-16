@@ -9,6 +9,18 @@
 body {
 	background: rgb(204,204,204); 
 }
+
+#page-number {
+	position: fixed;
+	right: 15px;
+	top: 15px;
+	padding: 0.5rem 1rem;
+	text-align: center;
+	font-size: 2rem;
+	background: #eee;
+	box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+}
+
 page {
 	background: white;
 	display: block;
@@ -55,39 +67,71 @@ page[size="A5"][layout="landscape"] {
 </head>
 <body>
 
-<page id="page-0" size="A4" contenteditable>
+<div id="page-number">1</div>
+
+<page page_number="1" size="A4" contenteditable>
 	<?php
-	$string     = file_get_contents( 'words.html' );
-	$word_count = count(
-		str_word_count(
-			strip_tags(
-				strtolower(
-					$string
-				)
-			),
-			1
-		)
-	);
+	$string = file_get_contents( 'words.html' );
+
+	function word_count( $string ) {
+		$word_count = count(
+			str_word_count(
+				strip_tags(
+					strtolower(
+						$string
+					)
+				),
+				1
+			)
+		);
+
+		return $word_count;
+	}
+
+	$blocks = explode( "\n\n", $string );
 
 	$x          = 0;
 	$text       = '';
-	while ( $x < 1 ) {
+	while ( $x < 100 ) {
 		$x++;
-		$text = $text . $string;
+
+		$text .= '<p>' . $blocks[ $x ] . '</p>';
 	}
 
-	$word_count = $word_count * $x;
-
-	echo '<h1>Word count: ' . $word_count . '</h1>';
+	echo '<h1>Total word count: ' . word_count( $string ) . ', but we only used ' . word_count( $text ) . '</h1>';
 	echo $text;
 ?>
 </page>
 
 <script>
+
 window.addEventListener( 'load', function( event ) {
 	let pages       = document.querySelectorAll( 'page' );
-	let page_number = 0;
-	let page        = pages[ page_number ];
+	let page_number = 1;
+	let page        = pages[ page_number - 1 ];
+
+	/**
+	 * Update stuff on scrolling.
+	 */
+	window.addEventListener( 'scroll', function() {
+		let z = 0;
+		while ( z < pages.length ) {
+			if ( get_scroll_from_top() > pages[ z ].offsetTop ) {
+				const page_number_box = document.getElementById( 'page-number' );
+				page_number_box.innerHTML = z + 1;
+			}
+			z++;
+		}
+	} );
+
+	/**
+	 * Get the scroll distance from top of page.
+	 *
+	 * @return int The scroll distance from top of page.
+	 */
+	function get_scroll_from_top() {
+		return window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop
+	}
 
 	/**
 	 * Does the page have scrollbars?
@@ -115,16 +159,16 @@ window.addEventListener( 'load', function( event ) {
 
 				const block = page.children[ i ];
 				let next_page;
-				if ( undefined === pages[ page_number + 1 ] ) {
+				if ( undefined === pages[ page_number ] ) {
 					next_page = document.createElement( 'page' );
+					next_page.setAttribute( 'page_number', ( page_number ) );
 					next_page.setAttribute( 'size', 'A4' );
 					next_page.setAttribute( 'contenteditable', '' );
-					next_page.setAttribute( 'id', 'page-' + ( page_number + 1 ) );
 					document.body.appendChild( next_page );
 
 					pages = document.querySelectorAll( 'page' );
 				} else {
-					next_page = pages[ page_number + 1 ];
+					next_page = pages[ page_number ];
 				}
 				next_page.prepend( block );
 
@@ -132,7 +176,7 @@ window.addEventListener( 'load', function( event ) {
 				if ( false === has_scroll( page ) ) {
 					page_number++;
 
-					page = pages[ page_number ];
+					page = pages[ page_number - 1 ];
 
 					break;
 				}
@@ -140,17 +184,15 @@ window.addEventListener( 'load', function( event ) {
 			}
 
 			if ( i === 1 ) {
-				something = true;
+				pages_left_load = false;
 			}
 
 		} // endif;
 
 	}
 
-	/*
-	*/
-	let something = false;
-	while ( something === false ) {
+	let pages_left_load = true;
+	while ( pages_left_load === true ) {
 
 
 		move_elements_to_next_page();
