@@ -27,6 +27,7 @@ page {
 	margin: 0 auto;
 	box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
 	margin-bottom: 20px;
+	overflow: hidden;
 }
 page[size="A4"] {  
 	width: 21cm;
@@ -63,13 +64,18 @@ page[size="A5"][layout="landscape"] {
 	}
 }
 
+.hidden-text {
+	color: #ccc;
+	background: #eee;
+}
+
 	</style>
 </head>
 <body>
 
 <div id="page-number">1</div>
 
-<page page_number="1" size="A4" contenteditable></page>
+<page class="hidden-text" page_number="1" size="A4" contenteditable></page>
 
 <script>
 
@@ -79,21 +85,18 @@ page[size="A5"][layout="landscape"] {
 const request = new XMLHttpRequest();
 request.open(
 	'GET',
-	'words.php',
+	'words.php?pages=1,2,3',
 	true
 );
 request.setRequestHeader( 'Content-type', 'application/json' );
 request.onreadystatechange = function() {
 	if ( request.readyState == 4 && request.status == 200 ) {
-		let blocks = JSON.parse( request.responseText );
-		let pages  = document.querySelectorAll( 'page' );
-		let page   = pages[0];
+		let pages_content = JSON.parse( request.responseText );
+		let the_pages    = document.querySelectorAll( 'page' );
 
-		let z = 0;
-		while ( z < blocks.length ) {
-			page.innerHTML = page.innerHTML + blocks[ z ];
-
-			z++;
+		for ( const [ the_page_number, page_content ] of Object.entries( pages_content ) ) {
+			const the_page = the_pages[ 0 ];
+			the_page.innerHTML = the_page.innerHTML + page_content;
 		}
 
 	}
@@ -104,9 +107,10 @@ request.send();
 window.addEventListener( 'load', function( event ) {
 	const page_number_box = document.getElementById( 'page-number' );
 
-	let pages       = document.querySelectorAll( 'page' );
-	let page_number = 1;
-	let page        = pages[ page_number - 1 ];
+	let pages             = document.querySelectorAll( 'page' );
+	let start_page_number = 1;
+	let page_number       = start_page_number;
+	let page              = pages[ page_number - 1 ];
 
 	/**
 	 * Get the scroll distance from top of page.
@@ -140,11 +144,15 @@ window.addEventListener( 'load', function( event ) {
 			let i = page.children.length;
 			while ( i > 0 ) {
 				i = i - 1;
-
+let bla = 0;
+while ( bla < (1000*1000*10) ) {
+	bla++;
+}
 				const block = page.children[ i ];
 				let next_page;
 				if ( undefined === pages[ page_number ] ) {
 					next_page = document.createElement( 'page' );
+					next_page.setAttribute( 'class', 'hidden-text' );
 					next_page.setAttribute( 'page_number', ( page_number ) );
 					next_page.setAttribute( 'size', 'A4' );
 					next_page.setAttribute( 'contenteditable', '' );
@@ -161,6 +169,7 @@ window.addEventListener( 'load', function( event ) {
 					page_number++;
 
 					page = pages[ page_number - 1 ];
+					page.removeAttribute( 'class', 'hidden-text' );
 
 					break;
 				}
@@ -182,6 +191,7 @@ window.addEventListener( 'load', function( event ) {
 		move_elements_to_next_page();
 
 		if ( false === has_scroll( page ) ) {
+			pages[ start_page_number - 1 ].removeAttribute( 'class', 'hidden-text' );
 			break;
 		}
 
