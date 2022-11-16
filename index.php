@@ -102,23 +102,11 @@ request.send();
 
 
 window.addEventListener( 'load', function( event ) {
+	const page_number_box = document.getElementById( 'page-number' );
+
 	let pages       = document.querySelectorAll( 'page' );
 	let page_number = 1;
 	let page        = pages[ page_number - 1 ];
-
-	/**
-	 * Update stuff on scrolling.
-	 */
-	window.addEventListener( 'scroll', function() {
-		let z = 0;
-		while ( z < pages.length ) {
-			if ( get_scroll_from_top() > pages[ z ].offsetTop ) {
-				const page_number_box = document.getElementById( 'page-number' );
-				page_number_box.innerHTML = z + 1;
-			}
-			z++;
-		}
-	} );
 
 	/**
 	 * Get the scroll distance from top of page.
@@ -199,6 +187,18 @@ window.addEventListener( 'load', function( event ) {
 
 	} // endwhile;
 
+	/**
+	 * Update stuff on scrolling.
+	 */
+	window.addEventListener( 'scroll', function() {
+		let z = 0;
+		while ( z < pages.length ) {
+			if ( get_scroll_from_top() > pages[ z ].offsetTop ) {
+				page_number_box.innerHTML = z + 1;
+			}
+			z++;
+		}
+	} );
 
 });
 
