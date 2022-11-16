@@ -69,41 +69,35 @@ page[size="A5"][layout="landscape"] {
 
 <div id="page-number">1</div>
 
-<page page_number="1" size="A4" contenteditable>
-	<?php
-	$string = file_get_contents( 'words.html' );
-
-	function word_count( $string ) {
-		$word_count = count(
-			str_word_count(
-				strip_tags(
-					strtolower(
-						$string
-					)
-				),
-				1
-			)
-		);
-
-		return $word_count;
-	}
-
-	$blocks = explode( "\n\n", $string );
-
-	$x          = 0;
-	$text       = '';
-	while ( $x < 100 ) {
-		$x++;
-
-		$text .= '<p>' . $blocks[ $x ] . '</p>';
-	}
-
-	echo '<h1>Total word count: ' . word_count( $string ) . ', but we only used ' . word_count( $text ) . '</h1>';
-	echo $text;
-?>
-</page>
+<page page_number="1" size="A4" contenteditable></page>
 
 <script>
+const request = new XMLHttpRequest();
+request.open(
+	'GET',
+	'words.php',
+	true
+);
+request.setRequestHeader( 'Content-type', 'application/json' );
+request.onreadystatechange = function() {
+	if ( request.readyState == 4 && request.status == 200 ) {
+		let blocks = JSON.parse( request.responseText );
+		let pages  = document.querySelectorAll( 'page' );
+		let page   = pages[0];
+
+		let z = 0;
+		while ( z < blocks.length ) {
+			page.innerHTML = page.innerHTML + blocks[ z ];
+
+			z++;
+		}
+
+	}
+};
+
+request.send();
+/*
+*/
 
 window.addEventListener( 'load', function( event ) {
 	let pages       = document.querySelectorAll( 'page' );
