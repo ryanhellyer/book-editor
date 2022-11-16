@@ -80,31 +80,6 @@ page[size="A5"][layout="landscape"] {
 
 <script>
 
-/**
- * Load page content via AJAX.
- */
-const request = new XMLHttpRequest();
-request.open(
-	'GET',
-	'words.php?pages=1,2,3,4,5,6,7,8,9',
-	true
-);
-request.setRequestHeader( 'Content-type', 'application/json' );
-request.onreadystatechange = function() {
-	if ( request.readyState == 4 && request.status == 200 ) {
-		let pages_content = JSON.parse( request.responseText );
-		let the_pages    = document.querySelectorAll( 'page' );
-
-		for ( const [ the_page_number, page_content ] of Object.entries( pages_content ) ) {
-			const the_page = the_pages[ 0 ];
-			the_page.innerHTML = the_page.innerHTML + page_content;
-		}
-
-	}
-};
-request.send();
-
-
 window.addEventListener( 'load', function( event ) {
 	const page_number_box = document.getElementById( 'page-number' );
 
@@ -139,20 +114,18 @@ window.addEventListener( 'load', function( event ) {
 	 * Move elements to the next page (and create that next page).
 	 */
 	function move_elements_to_next_page() {
-console.log( 'move' );
-//console.log( page );
 		// If we have scrollbars, then remove text.
 		if ( true === has_scroll( page ) ) {
-console.log( 'has scroll' );
 			let i = page.children.length;
 			while ( i > 0 ) {
 				i = i - 1;
 
-// Sleep.
-let bla = 0;
-while ( bla < (1000*1000*10) ) {
-	bla++;
-}
+				// Sleep.
+				let bla = 0;
+				while ( bla < (1000*1000*10) ) {
+					bla++;
+				}
+
 				const block = page.children[ i ];
 				let next_page;
 				if ( undefined === pages[ page_number ] ) {
@@ -160,7 +133,6 @@ while ( bla < (1000*1000*10) ) {
 					next_page.setAttribute( 'class', 'hidden-text' );
 					next_page.setAttribute( 'page_number', ( page_number + 1 ) );
 					next_page.setAttribute( 'size', 'A4' );
-//					next_page.setAttribute( 'contenteditable', '' );
 					wrapper.appendChild( next_page );
 
 					pages = document.querySelectorAll( 'page' );
@@ -191,18 +163,6 @@ while ( bla < (1000*1000*10) ) {
 
 	}
 
-	let pages_left_load = true;
-	while ( pages_left_load === true ) {
-
-		move_elements_to_next_page();
-
-		if ( false === has_scroll( page ) ) {
-			pages[ start_page_number - 1 ].removeAttribute( 'class', 'hidden-text' );
-			break;
-		}
-
-	} // endwhile;
-
 	/**
 	 * Update pages on click.
 	 *
@@ -221,26 +181,130 @@ while ( bla < (1000*1000*10) ) {
 				update_on_click( event );
 			}
 		);
-		pages[ i ].addEventListener(
-			'keyup',
-			function( event ) {
-				update_on_click( event );
+		/*
+		window.addEventListener(
+			'keydown',
+			function( i ) {
+//console.log( 'key down needs to know what page it is on. Needed to use window event listener, as page one did not seem to work with keydown for some reason' );
+				page = pages[ page_number - 1 ];
+
+				move_elements_to_next_page();
 			}
 		);
+		*/
 	}
 
 	/**
-	 * Update stuff on scrolling.
+	 * Display the current page number.
 	 */
-	window.addEventListener( 'scroll', function() {
+	function display_page_number() {
 		let z = 0;
 		while ( z < pages.length ) {
 			if ( get_scroll_from_top() > pages[ z ].offsetTop ) {
 				page_number_box.innerHTML = z + 1;
+			} else if ( 0 === get_scroll_from_top() ) { // Offset never actually reaches zero.
+				page_number_box.innerHTML = 1;
 			}
 			z++;
 		}
+	}
+
+	/**
+	 * Add pages and text to the document.
+	 */
+	function add_content_to_document() {
+		let pages_left_load = true;
+		while ( pages_left_load === true ) {
+
+			move_elements_to_next_page();
+
+			if ( false === has_scroll( page ) ) {
+				pages[ start_page_number - 1 ].removeAttribute( 'class', 'hidden-text' );
+				break;
+			}
+
+		} // endwhile;
+
+	}
+
+	/**
+	 * Load page content via AJAX.
+	 */
+	function request_pages( pages_to_request ) {
+		const request = new XMLHttpRequest();
+		request.open(
+			'GET',
+			'words.php?pages=' + pages_to_request,
+			true
+		);
+		request.setRequestHeader( 'Content-type', 'application/json' );
+		request.onreadystatechange = function() {
+			if ( request.readyState == 4 && request.status == 200 ) {
+				let pages_content = JSON.parse( request.responseText );
+				let the_pages    = document.querySelectorAll( 'page' );
+
+				for ( const [ the_page_number, page_content ] of Object.entries( pages_content ) ) {
+					const the_page = the_pages[ 0 ];
+					the_page.innerHTML = the_page.innerHTML + page_content;
+				}
+
+				add_content_to_document();
+			}
+		};
+		request.send();
+	}
+
+	request_pages( '1,2,3,4,5,6,7,8,9' );
+
+	// Update stuff on scrolling.
+	window.addEventListener( 'scroll', function() {
+		display_page_number();
 	} );
+
+	/**
+	 * Strip <page> tags from copy/paste content.
+	 * WORK IN PROGRESS.
+	 */
+	//	const target = document.querySelector('div.target');
+	function getSelectionHtml() {
+	    var html = "";
+	    if (typeof window.getSelection != "undefined") {
+	        var sel = window.getSelection();
+	        if (sel.rangeCount) {
+	            var container = document.createElement("div");
+	            for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+	                container.appendChild(sel.getRangeAt(i).cloneContents());
+	            }
+	            html = container.innerHTML;
+	        }
+	    } else if (typeof document.selection != "undefined") {
+	        if (document.selection.type == "Text") {
+	            html = document.selection.createRange().htmlText;
+	        }
+	    }
+	    return html;
+	}
+	wrapper.addEventListener('copy', function(e){
+
+		let selection = getSelectionHtml();
+		selection = selection.replace( '<page page_number="1" size="A4">', '' );
+		selection = selection.replace( '<page page_number="2" size="A4">', '' );
+		selection = selection.replace( '<page page_number="3" size="A4">', '' );
+		selection = selection.replace( '<page page_number="4" size="A4">', '' );
+		selection = selection.replace( '<page page_number="5" size="A4">', '' );
+		selection = selection.replace( '<page page_number="6 size="A4">', '' );
+		selection = selection.replace( '<page page_number="7" size="A4">', '' );
+		selection = selection.replace( '<page page_number="8" size="A4">', '' );
+		selection = selection.replace( '<page page_number="9" size="A4">', '' );
+		selection = selection.replace( '</page>', '' );
+		selection = selection.replace( '</page>', '' );
+		selection = selection.replace( '</page>', '' );
+
+	// 	e.clipboardData.setData('text/html', selection );
+		e.clipboardData.setData('text/plain', 'abc' );
+		alert( 'this is probably blocked due to use of http' );
+		return false;
+	});
 
 });
 
