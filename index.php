@@ -21,6 +21,10 @@ body {
 	box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
 }
 
+:focus-visible {
+	outline: none !important;
+}
+
 page {
 	background: white;
 	display: block;
@@ -254,6 +258,12 @@ window.addEventListener( 'load', function( event ) {
 		request.send();
 	}
 
+
+
+
+
+
+
 	request_pages( '1,2,3,4,5,6,7,8,9' );
 
 	// Update stuff on scrolling.
@@ -261,10 +271,13 @@ window.addEventListener( 'load', function( event ) {
 		display_page_number();
 	} );
 
+
+
+
+
 	/**
 	 * Strip <page> tags from copy/paste content.
 	 * WORK IN PROGRESS.
-	 */
 	//	const target = document.querySelector('div.target');
 	function getSelectionHtml() {
 	    var html = "";
@@ -305,6 +318,7 @@ window.addEventListener( 'load', function( event ) {
 		alert( 'this is probably blocked due to use of http' );
 		return false;
 	});
+	 */
 
 });
 
