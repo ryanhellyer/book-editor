@@ -120,15 +120,18 @@ window.addEventListener( 'load', function( event ) {
 	function move_elements_to_next_page() {
 		// If we have scrollbars, then remove text.
 		if ( true === has_scroll( page ) ) {
+
 			let i = page.children.length;
 			while ( i > 0 ) {
 				i = i - 1;
 
+				/*
 				// Sleep.
 				let bla = 0;
 				while ( bla < (1000*1000*10) ) {
 					bla++;
 				}
+				*/
 
 				const block = page.children[ i ];
 				let next_page;
@@ -158,11 +161,11 @@ window.addEventListener( 'load', function( event ) {
 			}
 
 			if ( i === 1 ) {
-				pages_left_load = false;
+				pages_left_to_shuffle = false;
 			}
 
 		} else {
-			console.log( 'should check if stuff needs moved back' );
+//			console.log( 'should check if stuff needs moved back' );
 		}
 
 	}
@@ -174,17 +177,16 @@ window.addEventListener( 'load', function( event ) {
 	 */
 	function update_on_click( event ) {
 		page_number = event.path[ 1 ].attributes[ 0 ].value;
-		page = pages[ page_number - 1 ];
 
-		move_elements_to_next_page();
+		page = pages[ page_number -1 ];
+		shuffle_content();
 	}
-	for ( let i = 0; i < pages.length; i++ ) {
-		pages[ i ].addEventListener(
-			'click',
-			function( event ) {
-				update_on_click( event );
-			}
-		);
+	wrapper.addEventListener(
+		'click',
+		function( event ) {
+			update_on_click( event );
+		}
+	);
 		/*
 		window.addEventListener(
 			'keydown',
@@ -196,7 +198,6 @@ window.addEventListener( 'load', function( event ) {
 			}
 		);
 		*/
-	}
 
 	/**
 	 * Display the current page number.
@@ -214,11 +215,12 @@ window.addEventListener( 'load', function( event ) {
 	}
 
 	/**
-	 * Add pages and text to the document.
+	 * Shuffle document content.
+	 * Shunts content to the next page when the first overflows.
 	 */
-	function add_content_to_document() {
-		let pages_left_load = true;
-		while ( pages_left_load === true ) {
+	function shuffle_content() {
+		let pages_left_to_shuffle = true;
+		while ( pages_left_to_shuffle === true ) {
 
 			move_elements_to_next_page();
 
@@ -252,7 +254,7 @@ window.addEventListener( 'load', function( event ) {
 					the_page.innerHTML = the_page.innerHTML + page_content;
 				}
 
-				add_content_to_document();
+				shuffle_content();
 			}
 		};
 		request.send();
@@ -264,42 +266,37 @@ window.addEventListener( 'load', function( event ) {
 
 
 
-	request_pages( '1,2,3,4,5,6,7,8,9' );
+	request_pages( '1,2,3' );
 
 	// Update stuff on scrolling.
 	window.addEventListener( 'scroll', function() {
 		display_page_number();
 	} );
 
-
-
-
-
 	/**
 	 * Strip <page> tags from copy/paste content.
-	 * WORK IN PROGRESS.
-	//	const target = document.querySelector('div.target');
-	function getSelectionHtml() {
-	    var html = "";
-	    if (typeof window.getSelection != "undefined") {
-	        var sel = window.getSelection();
-	        if (sel.rangeCount) {
-	            var container = document.createElement("div");
-	            for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-	                container.appendChild(sel.getRangeAt(i).cloneContents());
-	            }
-	            html = container.innerHTML;
-	        }
-	    } else if (typeof document.selection != "undefined") {
-	        if (document.selection.type == "Text") {
-	            html = document.selection.createRange().htmlText;
-	        }
-	    }
-	    return html;
-	}
-	wrapper.addEventListener('copy', function(e){
+	 */
+	wrapper.addEventListener( 'copy', function( e ) {
 
-		let selection = getSelectionHtml();
+		// Get selection.
+		let selection = '';
+		if ( typeof window.getSelection != 'undefined' ) {
+			var sel = window.getSelection();
+			if ( sel.rangeCount ) {
+				var container = document.createElement( 'div' );
+				for ( let i = 0, len = sel.rangeCount; i < len; ++i ) {
+					container.appendChild( sel.getRangeAt(i).cloneContents() );
+				}
+				selection = container.innerHTML;
+			}
+		} else if ( typeof document.selection != 'undefined' ) {
+			if ( document.selection.type == 'Text' ) {
+				selection = document.selection.createRange().htmlText;
+			}
+		}
+
+		// Strip out page tags.
+		// @todo convert to using regex or some other more logical method.
 		selection = selection.replace( '<page page_number="1" size="A4">', '' );
 		selection = selection.replace( '<page page_number="2" size="A4">', '' );
 		selection = selection.replace( '<page page_number="3" size="A4">', '' );
@@ -313,12 +310,11 @@ window.addEventListener( 'load', function( event ) {
 		selection = selection.replace( '</page>', '' );
 		selection = selection.replace( '</page>', '' );
 
-	// 	e.clipboardData.setData('text/html', selection );
-		e.clipboardData.setData('text/plain', 'abc' );
-		alert( 'this is probably blocked due to use of http' );
+		e.clipboardData.setData('text/html', selection );
+
+		e.preventDefault();
 		return false;
 	});
-	 */
 
 });
 
