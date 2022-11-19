@@ -118,9 +118,9 @@ window.addEventListener( 'load', function( event ) {
 	 * Move elements to the next page (and create that next page).
 	 */
 	function move_elements_to_next_page() {
+
 		// If we have scrollbars, then remove text.
 		if ( true === has_scroll( page ) ) {
-
 			let i = page.children.length;
 			while ( i > 0 ) {
 				i = i - 1;
@@ -138,7 +138,7 @@ window.addEventListener( 'load', function( event ) {
 				if ( undefined === pages[ page_number ] ) {
 					next_page = document.createElement( 'page' );
 					next_page.setAttribute( 'class', 'hidden-text' );
-					next_page.setAttribute( 'page_number', ( page_number + 1 ) );
+					next_page.setAttribute( 'page_number', ( parseInt( page_number ) + 1 ) );
 					next_page.setAttribute( 'size', 'A4' );
 					wrapper.appendChild( next_page );
 
@@ -176,11 +176,21 @@ window.addEventListener( 'load', function( event ) {
 	 * @event object The event handler.
 	 */
 	function update_on_click( event ) {
-		page_number = event.path[ 1 ].attributes[ 0 ].value;
+
+		// Dig through the nodes until the PAGE tag is found, and get the page number from it.
+		let x = 0;
+		while ( x < 5 ) {
+			if ( event.path[ x ].tagName === 'PAGE' ) {
+				page_number = parseInt( event.path[ x ].attributes[ 0 ].value );
+			}
+			x++;
+		}
 
 		page = pages[ page_number -1 ];
+
 		shuffle_content();
 	}
+
 	wrapper.addEventListener(
 		'click',
 		function( event ) {
